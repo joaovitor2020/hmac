@@ -60,18 +60,17 @@ def hmacMd5(key,text):
         chave2 = hashlib.md5(result3.encode("utf-8") + chave1.digest())
         return chave2
 
-def comparaHmac(chave1,chave2):
-       if(chave1 == chave2):
+def comparaHmac(key,text,chave):
+        g = hmacMd5(key,text).hexdigest()
+        if(g == chave):
                 return 1
-       elif(chave1 != chave2):
+        elif(g != chave):
                 return 0
         
 
-b = hmacMd5("key","test").hexdigest()
-a = hmacMd5("key","test").hexdigest()
-print(a)
+b = hmacMd5("key1","test1").hexdigest()
 print(b)
-print(comparaHmac(a,b))
+print(comparaHmac("key","test1",b))
 #print(comparaHmac(a,b))
 #print(hmacMd5(str1,str2).hexdigest())
 
