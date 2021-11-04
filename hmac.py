@@ -1,5 +1,4 @@
 import hashlib
-#import hmac
 MD5l = hashlib.md5().block_size
 
 def preencheString(s):
@@ -54,17 +53,25 @@ def hmacMd5(key,text):
         ipad = criaIpad()
         result1 = transformaIntChar(keyXorIpad(key,ipad))
         result2 = result1 + text
-        print(result2)
+        #print(result2)
         chave1 = hashlib.md5(result2.encode("utf-8"))
         opad = criaOpad()
         result3 = transformaIntChar(keyXorIpad(key,opad))
         chave2 = hashlib.md5(result3.encode("utf-8") + chave1.digest())
         return chave2
 
-#def comparaHmac(chave1,chave2):
-#        return compare_digest(chave1,chave2)
-#b = hmacMd5(str1,str2).digest
-#a = hmacMd5(str1,str2).digest
+def comparaHmac(chave1,chave2):
+       if(chave1 == chave2):
+                return 1
+       elif(chave1 != chave2):
+                return 0
+        
+
+b = hmacMd5("key","test").hexdigest()
+a = hmacMd5("key","test").hexdigest()
+print(a)
+print(b)
+print(comparaHmac(a,b))
 #print(comparaHmac(a,b))
 #print(hmacMd5(str1,str2).hexdigest())
 
