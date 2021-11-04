@@ -1,76 +1,44 @@
 import hashlib
-MD5l = hashlib.md5().block_size
+md5_block_size = hashlib.md5().block_size
+ENCODING = 'latin1'
+INNER = 0
+OUTER = 1
 
-def preencheString(s):
-        t = 0
-        m = MD5l - len(s)
-        while(t < m):
-                t+= 1
+def resize_string(s):
+        m = md5_block_size - len(s)
+        for t in range(0,m):
                 s+= chr(0)
         return s
 	     
-def criaIpad():	     
-        ipad = ''
-        w=0
-        while(w < MD5l):
-                w+= 1		
-                ipad += chr(0x36)
-        return ipad
-
-def keyXorIpad(key,ipad):
-        j=0
+def xor_pad(key,pad):
+        if pad not in [INNER, OUTER]: raise Exception('Param pad must be either INNER or OUTER')
         x = 0
-        result1 = []
-        while(j < len(ipad)):
-                x = ord(key[j])^ord(ipad[j])    #transforma cada caractere da string em inteire e faz um xor
-                result1.append(x)
-                j+=1
-        return result1                          #vetor com o resultado do key xor ipad
+        xored_bytes = []
+        for c in key:
+                y = (0x36 if pad == INNER else 0x5c)
+                x = ord(c)^ y    
+                xored_bytes.append(x)
+        return xored_bytes                          
 
 
-def transformaIntChar(v):
-        l=0
+def convert_int_char(v):
         result = ""
-        while(l < len(v)):
-                caractere = chr(v[l])
-                result += caractere
-                l+=1
+        for l in range(0,len(v)):
+                caracter = chr(v[l])
+                result += caracter
         return result
 
-def criaOpad():
-        o=0
-        opad=""
-        while(o < MD5l):
-                o+= 1		
-                opad += chr(0x5C)
-        #print(opad)
-        #print(len(opad))
-        return opad
-
-def hmacMd5(key,text):
-        if(len(key) < MD5l):
-           key =  preencheString(key)
-        ipad = criaIpad()
-        result1 = transformaIntChar(keyXorIpad(key,ipad))
+def hmac_md5(key,text):
+        if(len(key) < md5_block_size):
+           key =  resize_string(key)
+        result1 = convert_int_char(xor_pad(key,INNER))
         result2 = result1 + text
-        #print(result2)
-        chave1 = hashlib.md5(result2.encode("utf-8"))
-        opad = criaOpad()
-        result3 = transformaIntChar(keyXorIpad(key,opad))
-        chave2 = hashlib.md5(result3.encode("utf-8") + chave1.digest())
-        return chave2
+        chave1 = hashlib.md5(result2.encode(ENCODING))
+        result3 = convert_int_char(xor_pad(key,OUTER))
+        chave2 = hashlib.md5(result3.encode(ENCODING) + chave1.digest())
+        return (chave2).digest()
 
-def verificaHmac(key,text,hash_esperada):
-        g = hmacMd5(key,text).hexdigest()
-        if(g == hash_esperada):
-                return 1
-        elif(g != hash_esperada):
-                return 0
+def verify_hmac(key,text,expected_hash):
+        return hmac_md5(key,text) == expected_hash
         
-
-b = hmacMd5("key1","test1").hexdigest()
-print(b)
-print(verificaHmac("key1","test1",b))
-#print(comparaHmac(a,b))
-#print(hmacMd5(str1,str2).hexdigest())
 
